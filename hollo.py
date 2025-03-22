@@ -1,4 +1,2 @@
-# Print a greeting message
-print('Hello Python')  # 修正拼寫錯誤
-
-
+def buy_book(title):
+    print(f"買了一本書：{title}")
