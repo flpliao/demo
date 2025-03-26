@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: river-span-454804-p5
   REGION: asia-east1
-  SERVICE_NAME: demo-service
+  SERVICE_NAME: personal-ai-assistant
 
 jobs:
   deploy:

@@ -1,11 +1,11 @@
 steps:
   # 構建 Docker 映像檔
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA', '.']
 
   # 推送到 Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA']
+    args: ['push', 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA']
 
   # 部署到 Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -13,9 +13,9 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'demo-service'
+      - 'personal-ai-assistant'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA'
       - '--region'
       - 'asia-east1'
       - '--platform'
@@ -34,4 +34,4 @@ substitutions:
   _API_KEY: '' # 在 Cloud Build 觸發器中設置為秘密值，用於 API 認證
 
 images:
-  - 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA'
