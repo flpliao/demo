@@ -6,9 +6,9 @@ on:
       - main
 
 env:
-  PROJECT_ID: your-project-id
+  PROJECT_ID: demo-project-123456
   REGION: asia-east1
-  SERVICE_NAME: your-service-name
+  SERVICE_NAME: demo-service
 
 jobs:
   deploy:
@@ -39,5 +39,4 @@ jobs:
           --platform managed \
           --allow-unauthenticated \
           --set-env-vars "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
-          --set-env-vars "LINE_CHANNEL_SECRET=${{ secrets.LINE_CHANNEL_SECRET }}" \
-          --set-env-vars "LINE_CHANNEL_ACCESS_TOKEN=${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}"
+          --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }}"
