@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: demo-project-123456
+  PROJECT_ID: river-span-454804-p5
   REGION: asia-east1
   SERVICE_NAME: demo-service
 

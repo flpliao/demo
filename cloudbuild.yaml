@@ -1,0 +1,33 @@
+steps:
+  # 構建 Docker 映像檔
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA', '.']
+
+  # 推送到 Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA']
+
+  # 部署到 Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'demo-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA'
+      - '--region'
+      - 'asia-east1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'OPENAI_API_KEY=${_OPENAI_API_KEY},MONGODB_URI=${_MONGODB_URI}'
+
+# 使用環境替代變數，需要在 Cloud Build 觸發器中設定這些變數
+substitutions:
+  _OPENAI_API_KEY: 'YOUR_OPENAI_API_KEY'
+  _MONGODB_URI: 'YOUR_MONGODB_URI'
+
+images:
+  - 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA'
