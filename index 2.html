@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Page</title>
+    <style>
+<<<<<<< HEAD
+        .chat-container {
+            max-width: 500px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .chat-box {
+            height: 300px;
+            border: 1px solid #eee;
+            margin-bottom: 10px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+=======
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            margin: 20px 0;
+            color: #333;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-box {
+            height: 400px;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+            padding: 15px;
+            overflow-y: auto;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+>>>>>>> 10e9794 (初始化：建立聊天機器人專案)
+        .input-box {
+            display: flex;
+            gap: 10px;
+        }
+<<<<<<< HEAD
+        #user-input {
+            flex: 1;
+            padding: 8px;
+        }
+        button {
+            padding: 8px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+        }
+        .ai-message {
+            background-color: #f5f5f5;
+=======
+
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20px;
+        }
+
+        .ai-message {
+            background-color: #f5f5f5;
+            margin-right: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .chat-container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .chat-box {
+                height: 300px;
+            }
+
+            #user-input {
+                padding: 8px;
+            }
+
+            button {
+                padding: 8px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .chat-container {
+                margin: 5px;
+                padding: 10px;
+            }
+
+            .message {
+                padding: 10px;
+            }
+>>>>>>> 10e9794 (初始化：建立聊天機器人專案)
+        }
+    </style>
+</head>
+<body>
+    <h1>歡迎來到 Liao 的個人頁面！</h1>
+<<<<<<< HEAD
+    <h2>關於我</h2>
+    <p>我是 Liao 一個熱愛學習的初學者！</p>
+
+    <h2>我的興趣</h2>
+    <ul>
+        <li>新手學程式</li>
+        <li>Sharing AI 架站</li>
+        <li>SEO 優化</li>
+    </ul>
+
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9e63aaa9b4d066c06825e7da42a38e42beefda7
+>>>>>>> 10e9794 (初始化：建立聊天機器人專案)
+    <h2>個人 AI 助理</h2>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <div class="input-box">
+            <input type="text" id="user-input" placeholder="請輸入您的問題...">
+            <button onclick="sendMessage()">發送</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const message = input.value;
+            
+            if (message.trim() === '') return;
+
+            // 添加用戶訊息
+            chatBox.innerHTML += `
+                <div class="message user-message">
+                    <strong>您:</strong> ${message}
+                </div>`;
+
+            try {
+                // 發送請求到後端
+<<<<<<< HEAD
+                const response = await fetch('http://localhost:3000/api/chat', {
+=======
+<<<<<<< HEAD
+                const response = await fetch('http://localhost:3004/api/chat', {  // 修改端口號
+=======
+                const response = await fetch('http://localhost:3000/api/chat', {
+>>>>>>> b9e63aaa9b4d066c06825e7da42a38e42beefda7
+>>>>>>> 10e9794 (初始化：建立聊天機器人專案)
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                // 添加 AI 回應
+                chatBox.innerHTML += `
+                    <div class="message ai-message">
+                        <strong>AI:</strong> ${data.response}
+                    </div>`;
+            } catch (error) {
+                chatBox.innerHTML += `
+                    <div class="message ai-message" style="color: red;">
+                        <strong>錯誤:</strong> 無法連接到服務器
+                    </div>`;
+            }
+
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 按 Enter 發送訊息
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
