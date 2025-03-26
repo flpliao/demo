@@ -41,7 +41,7 @@ if (process.env.MONGODB_URI) {
 const DataSchema = new mongoose.Schema({
     type: String,
     content: Object,
-    date: { type: Date, default: Date now }
+    date: { type: Date, default: Date.now }
 });
 
 const Data = mongoose.model('Data', DataSchema);
@@ -104,7 +104,7 @@ app.post('/api/chat', async (req, res) => {
     } catch (error) {
         console.error("聊天API錯誤:", error);
         const statusCode = error.status || 500;
-        const errorMessage = error.message or "伺服器內部錯誤";
+        const errorMessage = error.message || "伺服器內部錯誤";
         res.status(200).json({ 
             error: errorMessage,
             timestamp: new Date().toISOString()
@@ -131,20 +131,52 @@ async function generateAIResponse(message) {
 }
 
 // Line Webhook 端點
-app.post('/webhook/line', line.middleware(lineConfig), async (req, res) => {
+app.post('/webhook/line', (req, res) => {
+    // 重要：必須始終返回 HTTP 200 響應
     if (!isLineConfigured) {
-        return res.status(503).json({ error: "Line 機器人未配置" });
+        console.error("Line 機器人未配置，無法處理 webhook");
+        return res.status(200).end();
     }
     
+    // 先回應 200，以免 LINE 平台重試
+    res.status(200).end();
+    
+    // 驗證 LINE 請求
     try {
+        const signature = req.headers['x-line-signature'];
+        if (!signature) {
+            console.error("缺少 LINE 簽名");
+            return;
+        }
+        
+        // 驗證請求簽名
+        const body = JSON.stringify(req.body);
+        const hash = crypto.createHmac('sha256', lineConfig.channelSecret)
+                        .update(body)
+                        .digest('base64');
+                        
+        if (hash !== signature) {
+            console.error("LINE 簽名驗證失敗");
+            return;
+        }
+        
+        // 處理 webhook 事件
         const events = req.body.events;
-        await Promise.all(events.map(async (event) => {
+        if (!events || events.length === 0) {
+            console.log("沒有事件要處理");
+            return;
+        }
+        
+        // 非同步處理事件
+        events.forEach(async (event) => {
             // 只處理文字訊息
             if (event.type !== 'message' || event.message.type !== 'text') {
+                console.log(`跳過非文字訊息事件: ${event.type}`);
                 return;
             }
             
             const userMessage = event.message.text;
+            console.log(`收到 LINE 用戶訊息: ${userMessage}`);
             
             // 記錄用戶訊息到 MongoDB (如果已配置)
             if (process.env.MONGODB_URI) {
@@ -157,25 +189,28 @@ app.post('/webhook/line', line.middleware(lineConfig), async (req, res) => {
                         }
                     });
                     await messageData.save();
+                    console.log("訊息已儲存到資料庫");
                 } catch (dbError) {
                     console.error("儲存 Line 訊息到資料庫時出錯:", dbError);
                 }
             }
             
-            // 使用 OpenAI 生成回應
-            const aiResponse = await generateAIResponse(userMessage);
-            
-            // 回覆用戶
-            await lineClient.replyMessage(event.replyToken, {
-                type: 'text',
-                text: aiResponse
-            });
-        }));
-        
-        res.status(200).end();
+            try {
+                // 使用 OpenAI 生成回應
+                const aiResponse = await generateAIResponse(userMessage);
+                
+                // 回覆用戶
+                await lineClient.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: aiResponse
+                });
+                console.log("已回覆 LINE 用戶");
+            } catch (replyError) {
+                console.error("回覆 LINE 用戶時出錯:", replyError);
+            }
+        });
     } catch (error) {
-        console.error("Line Webhook 錯誤:", error);
-        res.status(200).json({ error: "Internal Server Error" });
+        console.error("Line Webhook 處理錯誤:", error);
     }
 });
 
@@ -207,8 +242,8 @@ app.post('/api/line/push', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error("Line 推播錯誤:", error);
-        const statusCode = error.status or 500;
-        const errorMessage = error.message or "伺服器內部錯誤";
+        const statusCode = error.status || 500;
+        const errorMessage = error.message || "伺服器內部錯誤";
         res.status(statusCode).json({ 
             error: errorMessage,
             timestamp: new Date().toISOString()
@@ -229,8 +264,8 @@ app.post('/api/data', async (req, res) => {
         res.json({ success: true, id: newData._id });
     } catch (error) {
         console.error("資料儲存錯誤:", error);
-        const statusCode = error.status or 500;
-        const errorMessage = error.message or "伺服器內部錯誤";
+        const statusCode = error.status || 500;
+        const errorMessage = error.message || "伺服器內部錯誤";
         res.status(statusCode).json({ 
             error: errorMessage,
             timestamp: new Date().toISOString()
@@ -256,7 +291,7 @@ app.get('*', (req, res) => {
     });
 });
 
-const server = app.listen(port, '0.0.0.0', to console.log(`Server running on port ${port}`));
+const server = app.listen(port, '0.0.0.0', () => console.log(`Server running on port ${port}`));
 
 // 優雅關閉
 process.on('SIGTERM', gracefulShutdown);
