@@ -1,23 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Page</title>
+    <meta name="description" content="Liao 的個人頁面，包含 AI 聊天助理">
+    <title>Liao 的個人頁面</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👋</text></svg>">
     <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
         .chat-container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 20px auto;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 8px;
             padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .chat-box {
             height: 300px;
             border: 1px solid #eee;
-            margin-bottom: 10px;
-            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            padding: 15px;
             overflow-y: auto;
+            background-color: #fafafa;
         }
         .input-box {
             display: flex;
@@ -32,13 +46,29 @@
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
+            margin: 12px 0;
+            padding: 12px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .user-message {
             background-color: #e3f2fd;
@@ -49,40 +79,113 @@
     </style>
 </head>
 <body>
-    <h1>歡迎來到 Liao 的個人頁面！</h1>
-    <h2>關於我</h2>
-    <p>我是 Liao 一個熱愛學習的初學者！</p>
+    <header>
+        <h1>歡迎來到 Liao 的個人頁面！</h1>
+    </header>
+    
+    <main>
+        <section>
+            <h2>關於我</h2>
+            <p>我是 Liao，一個熱愛學習的初學者！我對技術充滿熱情，特別是在 AI 和網頁開發領域。</p>
+        </section>
 
-    <h2>我的興趣</h2>
-    <ul>
-        <li>新手學程式</li>
-        <li>Sharing AI 架站</li>
-        <li>SEO 優化</li>
-    </ul>
+        <section>
+            <h2>我的興趣</h2>
+            <ul>
+                <li>新手學程式 - 正在學習 JavaScript 和 Node.js</li>
+                <li>Sharing AI 架站 - 探索 AI 在網站開發中的應用</li>
+                <li>SEO 優化 - 研究如何提高網站在搜尋引擎中的可見度</li>
+            </ul>
+        </section>
 
-    <h2>個人 AI 助理</h2>
-    <div class="chat-container">
-        <div class="chat-box" id="chat-box"></div>
-        <div class="input-box">
-            <input type="text" id="user-input" placeholder="請輸入您的問題...">
-            <button onclick="sendMessage()">發送</button>
-        </div>
-    </div>
+        <section>
+            <h2>Line 機器人助理</h2>
+            <p>我已經建立了一個 Line 機器人助理，您可以透過掃描以下 QR 碼或點擊連結來加入好友：</p>
+            <p><em>（請在 Line Developers 後台獲取您的 QR 碼圖片並放置於此）</em></p>
+            <p>加入好友後，您可以直接向機器人發送訊息，它將使用 AI 技術回答您的問題。</p>
+            <p>這個 Line 機器人與本網頁上的聊天助理使用相同的 AI 技術，但可以隨時隨地透過 Line 應用程式使用。</p>
+        </section>
+
+        <section>
+            <h2>個人 AI 助理</h2>
+            <div class="chat-container">
+                <div class="chat-box" id="chat-box">
+                    <div class="message ai-message">
+                        <strong>AI:</strong> 您好！我是 Liao 的 AI 助理，有什麼我可以幫您的嗎？
+                    </div>
+                </div>
+                <div class="input-box">
+                    <input type="text" id="user-input" placeholder="請輸入您的問題...">
+                    <button id="send-button" onclick="sendMessage()">發送</button>
+                </div>
+                <div id="status" style="margin-top: 10px; font-size: 0.8em; color: #666;"></div>
+            </div>
+        </section>
+    </main>
+    
+    <footer style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 0.8em; color: #666;">
+        <p>© 2025 Liao. 此網站使用 Node.js、OpenAI API 和 Line Messaging API 構建。</p>
+        <p>注意：此服務僅供個人使用，所有對話內容均受到保護。</p>
+    </footer>
 
     <script>
+        // 檢查伺服器健康狀態
+        async function checkServerHealth() {
+            const statusElement = document.getElementById('status');
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    statusElement.textContent = '伺服器狀態: 正常運行中';
+                    statusElement.style.color = '#28a745';
+                    
+                    // 檢查服務配置
+                    if (data.services.openai !== 'configured') {
+                        statusElement.textContent += ' (AI 聊天功能未配置)';
+                        statusElement.style.color = '#ffc107';
+                    }
+                } else {
+                    statusElement.textContent = '伺服器狀態: 異常';
+                    statusElement.style.color = '#dc3545';
+                }
+            } catch (error) {
+                console.error("健康檢查錯誤:", error);
+                statusElement.textContent = '伺服器狀態: 無法連接';
+                statusElement.style.color = '#dc3545';
+            }
+        }
+        
+        // 頁面載入時檢查伺服器健康狀態
+        window.addEventListener('DOMContentLoaded', checkServerHealth);
+        
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const chatBox = document.getElementById('chat-box');
+            const sendButton = document.getElementById('send-button');
             const message = input.value;
             
             if (message.trim() === '') return;
-
+            
+            // 禁用發送按鈕，防止重複發送
+            sendButton.disabled = true;
+            
             // 添加用戶訊息
-            chatBox.innerHTML += `
-                <div class="message user-message">
-                    <strong>您:</strong> ${message}
-                </div>`;
-
+            const userMessageElement = document.createElement('div');
+            userMessageElement.className = 'message user-message';
+            userMessageElement.innerHTML = `<strong>您:</strong> ${escapeHtml(message)}`;
+            chatBox.appendChild(userMessageElement);
+            
+            // 顯示正在輸入指示
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message ai-message';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.innerHTML = '<strong>AI:</strong> <em>正在思考...</em>';
+            chatBox.appendChild(typingIndicator);
+            
+            // 滾動到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
             try {
                 // 發送請求到後端
                 const response = await fetch('/api/chat', {
@@ -93,36 +196,59 @@
                     body: JSON.stringify({ message })
                 });
 
+                // 移除正在輸入指示
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) chatBox.removeChild(indicator);
+                
                 const data = await response.json();
                 
                 if (data.error) {
                     // 處理錯誤回應
-                    chatBox.innerHTML += `
-                        <div class="message ai-message" style="color: red;">
-                            <strong>錯誤:</strong> ${data.error}
-                        </div>`;
+                    const errorElement = document.createElement('div');
+                    errorElement.className = 'message ai-message';
+                    errorElement.style.color = '#dc3545';
+                    errorElement.innerHTML = `<strong>錯誤:</strong> ${escapeHtml(data.error)}`;
+                    chatBox.appendChild(errorElement);
                 } else {
                     // 添加 AI 回應
-                    chatBox.innerHTML += `
-                        <div class="message ai-message">
-                            <strong>AI:</strong> ${data.response}
-                        </div>`;
+                    const aiMessageElement = document.createElement('div');
+                    aiMessageElement.className = 'message ai-message';
+                    aiMessageElement.innerHTML = `<strong>AI:</strong> ${escapeHtml(data.response)}`;
+                    chatBox.appendChild(aiMessageElement);
                 }
             } catch (error) {
                 console.error("API錯誤:", error);
-                chatBox.innerHTML += `
-                    <div class="message ai-message" style="color: red;">
-                        <strong>錯誤:</strong> 無法連接到服務器
-                    </div>`;
+                
+                // 移除正在輸入指示
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) chatBox.removeChild(indicator);
+                
+                const errorElement = document.createElement('div');
+                errorElement.className = 'message ai-message';
+                errorElement.style.color = '#dc3545';
+                errorElement.innerHTML = '<strong>錯誤:</strong> 無法連接到服務器，請檢查您的網絡連接或稍後再試';
+                chatBox.appendChild(errorElement);
+            } finally {
+                // 重新啟用發送按鈕
+                sendButton.disabled = false;
+                input.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
             }
-
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // 防止 XSS 攻擊的函數
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         // 按 Enter 發送訊息
         document.getElementById('user-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !document.getElementById('send-button').disabled) {
                 sendMessage();
             }
         });

@@ -22,12 +22,16 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'OPENAI_API_KEY=${_OPENAI_API_KEY},MONGODB_URI=${_MONGODB_URI}'
+      - 'OPENAI_API_KEY=${_OPENAI_API_KEY},MONGODB_URI=${_MONGODB_URI},LINE_CHANNEL_ACCESS_TOKEN=${_LINE_CHANNEL_ACCESS_TOKEN},LINE_CHANNEL_SECRET=${_LINE_CHANNEL_SECRET},NODE_ENV=production,API_KEY=${_API_KEY}'
 
 # 使用環境替代變數，需要在 Cloud Build 觸發器中設定這些變數
+# 注意：請勿在此處設置實際的 API 金鑰或連接字串，這些應該在 Cloud Build 觸發器中設置為秘密值
 substitutions:
-  _OPENAI_API_KEY: 'YOUR_OPENAI_API_KEY'
-  _MONGODB_URI: 'YOUR_MONGODB_URI'
+  _OPENAI_API_KEY: '' # 在 Cloud Build 觸發器中設置為秘密值
+  _MONGODB_URI: '' # 在 Cloud Build 觸發器中設置為秘密值
+  _LINE_CHANNEL_ACCESS_TOKEN: '' # 在 Cloud Build 觸發器中設置為秘密值
+  _LINE_CHANNEL_SECRET: '' # 在 Cloud Build 觸發器中設置為秘密值
+  _API_KEY: '' # 在 Cloud Build 觸發器中設置為秘密值，用於 API 認證
 
 images:
   - 'gcr.io/$PROJECT_ID/demo-service:$COMMIT_SHA'
