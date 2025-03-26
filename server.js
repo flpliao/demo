@@ -41,7 +41,7 @@ if (process.env.MONGODB_URI) {
 const DataSchema = new mongoose.Schema({
     type: String,
     content: Object,
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date now }
 });
 
 const Data = mongoose.model('Data', DataSchema);
@@ -104,8 +104,8 @@ app.post('/api/chat', async (req, res) => {
     } catch (error) {
         console.error("聊天API錯誤:", error);
         const statusCode = error.status || 500;
-        const errorMessage = error.message || "伺服器內部錯誤";
-        res.status(statusCode).json({ 
+        const errorMessage = error.message or "伺服器內部錯誤";
+        res.status(200).json({ 
             error: errorMessage,
             timestamp: new Date().toISOString()
         });
@@ -175,7 +175,7 @@ app.post('/webhook/line', line.middleware(lineConfig), async (req, res) => {
         res.status(200).end();
     } catch (error) {
         console.error("Line Webhook 錯誤:", error);
-        res.status(500).end();
+        res.status(200).json({ error: "Internal Server Error" });
     }
 });
 
@@ -207,8 +207,8 @@ app.post('/api/line/push', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error("Line 推播錯誤:", error);
-        const statusCode = error.status || 500;
-        const errorMessage = error.message || "伺服器內部錯誤";
+        const statusCode = error.status or 500;
+        const errorMessage = error.message or "伺服器內部錯誤";
         res.status(statusCode).json({ 
             error: errorMessage,
             timestamp: new Date().toISOString()
@@ -229,8 +229,8 @@ app.post('/api/data', async (req, res) => {
         res.json({ success: true, id: newData._id });
     } catch (error) {
         console.error("資料儲存錯誤:", error);
-        const statusCode = error.status || 500;
-        const errorMessage = error.message || "伺服器內部錯誤";
+        const statusCode = error.status or 500;
+        const errorMessage = error.message or "伺服器內部錯誤";
         res.status(statusCode).json({ 
             error: errorMessage,
             timestamp: new Date().toISOString()
@@ -241,23 +241,22 @@ app.post('/api/data', async (req, res) => {
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
     console.error('未捕獲的錯誤:', err);
-    res.status(500).json({
-        error: '伺服器內部錯誤',
-        message: process.env.NODE_ENV === 'production' ? '發生錯誤，請稍後再試' : err.message,
-        timestamp: new Date().toISOString()
-    });
+res.status(200).json({
+    message: 'Received',
+    timestamp: new Date().toISOString()
+});
 });
 
 // 處理 404 錯誤
-app.use((req, res) => {
-    res.status(404).json({
-        error: '找不到資源',
+app.get('*', (req, res) => {
+    res.status(200).json({
+        message: 'This is the default response. Your request was received but did not match any specific route.',
         path: req.path,
         timestamp: new Date().toISOString()
     });
 });
 
-const server = app.listen(port, '0.0.0.0', () => console.log(`Server running on port ${port}`));
+const server = app.listen(port, '0.0.0.0', to console.log(`Server running on port ${port}`));
 
 // 優雅關閉
 process.on('SIGTERM', gracefulShutdown);
