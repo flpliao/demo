@@ -130,88 +130,111 @@ async function generateAIResponse(message) {
     }
 }
 
-// Line Webhook 端點
-app.post('/webhook/line', (req, res) => {
-    // 重要：必須始終返回 HTTP 200 響應
-    if (!isLineConfigured) {
-        console.error("Line 機器人未配置，無法處理 webhook");
-        return res.status(200).end();
-    }
-    
-    // 先回應 200，以免 LINE 平台重試
-    res.status(200).end();
-    
-    // 驗證 LINE 請求
-    try {
-        const signature = req.headers['x-line-signature'];
-        if (!signature) {
-            console.error("缺少 LINE 簽名");
+// 設置多個 LINE Webhook 端點，確保無論使用哪個路徑都能正確響應
+const setupLineWebhook = (path) => {
+    app.post(path, (req, res) => {
+        console.log(`接收到 LINE Webhook 請求: ${path}`);
+        
+        // 最重要：無論如何都立即回應 HTTP 200
+        res.status(200).end();
+        
+        // 如果未配置 LINE，僅記錄並返回
+        if (!isLineConfigured) {
+            console.error("Line 機器人未配置，無法處理 webhook");
             return;
         }
         
-        // 驗證請求簽名
-        const body = JSON.stringify(req.body);
-        const hash = crypto.createHmac('sha256', lineConfig.channelSecret)
-                        .update(body)
-                        .digest('base64');
-                        
-        if (hash !== signature) {
-            console.error("LINE 簽名驗證失敗");
-            return;
-        }
-        
-        // 處理 webhook 事件
-        const events = req.body.events;
-        if (!events || events.length === 0) {
-            console.log("沒有事件要處理");
-            return;
-        }
-        
-        // 非同步處理事件
-        events.forEach(async (event) => {
-            // 只處理文字訊息
-            if (event.type !== 'message' || event.message.type !== 'text') {
-                console.log(`跳過非文字訊息事件: ${event.type}`);
-                return;
-            }
-            
-            const userMessage = event.message.text;
-            console.log(`收到 LINE 用戶訊息: ${userMessage}`);
-            
-            // 記錄用戶訊息到 MongoDB (如果已配置)
-            if (process.env.MONGODB_URI) {
-                try {
-                    const messageData = new Data({
-                        type: 'line_message',
-                        content: {
-                            userId: event.source.userId,
-                            message: userMessage
-                        }
-                    });
-                    await messageData.save();
-                    console.log("訊息已儲存到資料庫");
-                } catch (dbError) {
-                    console.error("儲存 Line 訊息到資料庫時出錯:", dbError);
-                }
-            }
-            
+        // 異步處理其餘邏輯，不影響響應速度
+        setTimeout(async () => {
             try {
-                // 使用 OpenAI 生成回應
-                const aiResponse = await generateAIResponse(userMessage);
+                const signature = req.headers['x-line-signature'];
+                if (!signature) {
+                    console.error("缺少 LINE 簽名");
+                    return;
+                }
                 
-                // 回覆用戶
-                await lineClient.replyMessage(event.replyToken, {
-                    type: 'text',
-                    text: aiResponse
-                });
-                console.log("已回覆 LINE 用戶");
-            } catch (replyError) {
-                console.error("回覆 LINE 用戶時出錯:", replyError);
+                const body = JSON.stringify(req.body);
+                const hash = crypto.createHmac('sha256', lineConfig.channelSecret)
+                            .update(body)
+                            .digest('base64');
+                            
+                if (hash !== signature) {
+                    console.error("LINE 簽名驗證失敗");
+                    return;
+                }
+                
+                const events = req.body.events;
+                if (!events || events.length === 0) {
+                    console.log("沒有事件要處理");
+                    return;
+                }
+                
+                // 處理每個事件
+                for (const event of events) {
+                    // 只處理文字訊息
+                    if (event.type !== 'message' || event.message.type !== 'text') {
+                        console.log(`跳過非文字訊息事件: ${event.type}`);
+                        continue;
+                    }
+                    
+                    const userMessage = event.message.text;
+                    console.log(`收到 LINE 用戶訊息: ${userMessage}`);
+                    
+                    // 記錄用戶訊息到 MongoDB (如果已配置)
+                    if (process.env.MONGODB_URI) {
+                        try {
+                            const messageData = new Data({
+                                type: 'line_message',
+                                content: {
+                                    userId: event.source.userId,
+                                    message: userMessage
+                                }
+                            });
+                            await messageData.save();
+                            console.log("訊息已儲存到資料庫");
+                        } catch (dbError) {
+                            console.error("儲存 Line 訊息到資料庫時出錯:", dbError);
+                        }
+                    }
+                    
+                    try {
+                        // 使用 OpenAI 生成回應
+                        const aiResponse = await generateAIResponse(userMessage);
+                        
+                        // 回覆用戶
+                        await lineClient.replyMessage(event.replyToken, {
+                            type: 'text',
+                            text: aiResponse
+                        });
+                        console.log("已回覆 LINE 用戶");
+                    } catch (replyError) {
+                        console.error("回覆 LINE 用戶時出錯:", replyError);
+                    }
+                }
+            } catch (error) {
+                console.error("Line Webhook 處理錯誤:", error);
             }
-        });
-    } catch (error) {
-        console.error("Line Webhook 處理錯誤:", error);
-    }
+        }, 0);
+    });
+};
+
+// 註冊多個可能的 webhook 路徑
+setupLineWebhook('/webhook/line');
+setupLineWebhook('/line/webhook');
+setupLineWebhook('/webhook');
+setupLineWebhook('/callback');
+setupLineWebhook('/line/callback');
+setupLineWebhook('/bot/webhook');
+setupLineWebhook('/bot/callback');
+
+// 添加通用端點以確保所有 POST 請求都收到 200 回應
+app.post('*', (req, res) => {
+    console.log(`接收到未知 POST 請求: ${req.path}`);
+    res.status(200).json({
+        message: 'OK - This is a generic response to ensure all POST requests receive a 200 status code',
+        path: req.path,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Line 推播功能
