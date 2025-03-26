@@ -95,12 +95,21 @@
 
                 const data = await response.json();
                 
-                // 添加 AI 回應
-                chatBox.innerHTML += `
-                    <div class="message ai-message">
-                        <strong>AI:</strong> ${data.response}
-                    </div>`;
+                if (data.error) {
+                    // 處理錯誤回應
+                    chatBox.innerHTML += `
+                        <div class="message ai-message" style="color: red;">
+                            <strong>錯誤:</strong> ${data.error}
+                        </div>`;
+                } else {
+                    // 添加 AI 回應
+                    chatBox.innerHTML += `
+                        <div class="message ai-message">
+                            <strong>AI:</strong> ${data.response}
+                        </div>`;
+                }
             } catch (error) {
+                console.error("API錯誤:", error);
                 chatBox.innerHTML += `
                     <div class="message ai-message" style="color: red;">
                         <strong>錯誤:</strong> 無法連接到服務器
