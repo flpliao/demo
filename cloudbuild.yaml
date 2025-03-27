@@ -1,11 +1,11 @@
 steps:
   # 構建 Docker 映像檔
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/personal-ai-assistant:latest', '.']
 
   # 推送到 Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA']
+    args: ['push', 'gcr.io/$PROJECT_ID/personal-ai-assistant:latest']
 
   # 部署到 Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +15,7 @@ steps:
       - 'deploy'
       - 'personal-ai-assistant'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA'
+      - 'gcr.io/$PROJECT_ID/personal-ai-assistant:latest'
       - '--region'
       - 'asia-east1'
       - '--platform'
@@ -23,6 +23,9 @@ steps:
       - '--allow-unauthenticated'
       - '--set-env-vars'
       - 'OPENAI_API_KEY=${_OPENAI_API_KEY},MONGODB_URI=${_MONGODB_URI},LINE_CHANNEL_ACCESS_TOKEN=${_LINE_CHANNEL_ACCESS_TOKEN},LINE_CHANNEL_SECRET=${_LINE_CHANNEL_SECRET},NODE_ENV=production,API_KEY=${_API_KEY}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
 
 # 使用環境替代變數，需要在 Cloud Build 觸發器中設定這些變數
 # 注意：請勿在此處設置實際的 API 金鑰或連接字串，這些應該在 Cloud Build 觸發器中設置為秘密值
@@ -34,4 +37,4 @@ substitutions:
   _API_KEY: '' # 在 Cloud Build 觸發器中設置為秘密值，用於 API 認證
 
 images:
-  - 'gcr.io/$PROJECT_ID/personal-ai-assistant:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/personal-ai-assistant:latest'
